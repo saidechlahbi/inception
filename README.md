@@ -1,5 +1,3 @@
-# inception
-This project aims to broaden your knowledge of system administration by using Docker. You will virtualize several Docker images, creating them in your new personal virtual machine.
 *This project has been created as part of the 42 curriculum by sechlahb.*
 
 # Inception
@@ -11,25 +9,20 @@ Inception is a system administration project whose goal is to deploy a small, co
 The stack sets up a WordPress site served over HTTPS, backed by a MariaDB database, with each service isolated in its own container built from a custom Dockerfile (no pre-built images pulled from Docker Hub, aside from the base Alpine/Debian image).
 
 **Mandatory services:**
-- **NGINX** — the single entry point of the infrastructure, serving WordPress over HTTPS (TLSv1.2/TLSv1.3) on port 443.
+- **NGINX** — the single entry point of the infrastructure, serving WordPress over HTTPS (TLSv1.2/TLSv1.3) on port 443 only.
 - **WordPress + php-fpm** — the CMS application, running without a bundled web server, communicating with NGINX over FastCGI.
 - **MariaDB** — the database engine backing WordPress, with no web server installed.
 
-**Bonus services:**
-- **Redis** — object cache for WordPress, reducing database load.
-- **FTP server** — provides FTP access to the WordPress volume for file management.
-- **Static website** — a small standalone site (non-PHP) served independently.
-- **Adminer** — a lightweight web UI for inspecting/administering the MariaDB database.
-- **Portainer** — a web UI for managing and monitoring the Docker environment itself.
-
 All containers communicate over a dedicated Docker bridge network, and persistent data (the WordPress database and website files) is stored in Docker named volumes bind-mounted to `/home/sechlahb/data` on the host.
+
+> This submission covers the **mandatory part only**; no bonus services are included.
 
 ## Instructions
 
 ### Prerequisites
-- A Linux virtual machine
-- Docker and the Docker Compose plugin installed
-- Root/sudo privileges (needed to write the host `/etc/hosts` entry and manage the data directory)
+- A Linux virtual machine.
+- Docker and the Docker Compose plugin installed.
+- Root/sudo privileges (needed to write the host `/etc/hosts` entry and manage the data directory).
 
 ### Setup
 1. Clone the repository.
@@ -38,30 +31,23 @@ All containers communicate over a dedicated Docker bridge network, and persisten
    127.0.0.1   sechlahb.42.fr
    ```
    (add this line to `/etc/hosts`)
-3. Review/adjust the variables in `srcs/.env` if needed (database credentials, WordPress admin, FTP credentials, domain name). Example `.env`:
+3. Review/adjust the variables in `srcs/.env` if needed (database credentials, WordPress admin, domain name). Example `.env`:
    ```
-   MARIA_DB_NAME=maria
-   USER=umaria
-   USER_PASSWORD=123
-   ROOT_PASSWORD=123
-
-   WORDPRESS_DB_HOST=wordpress
+   MARIA_DB=mariadb_db
+   USER=sechlahb
+   USER_PASSWORD=12345
+   ROOT_PASSWORD=12345
 
    DOMAIN_NAME=sechlahb.42.fr
-   WP_ADMIN_USER=auser
-   WP_ADMIN_EMAIL=amail@student.1337.fr
+   WP_ADMIN_USER=said
+   WP_ADMIN_PASSWORD=12345
+   WP_ADMIN_EMAIL=sechlahbi@gmail.com
 
-   WP_USER=wpuser
-   WP_USER_EMAIL=wpuser@gmail.com
-
-   WP_USER_PASSWORD=123
-   WP_ADMIN_PASSWORD=123
-   WP_PASSWORD=123
-
-   FTP_USER=fuser
-   FTP_PASSWORD=123
+   WP_USER=sechlahb
+   WP_USER_EMAIL=said@gmail.com
+   WP_USER_PASSWORD=12345
    ```
-   This file must never be committed to git — keep it listed in `.gitignore`.
+   This file must never be committed to git — it is kept in `.gitignore`.
 
 ### Build and run
 ```bash
@@ -73,12 +59,11 @@ make        # builds all images and starts every container in detached mode
 make down    # stops and removes the containers
 make clean   # stops the containers and removes the associated volumes
 make fclean  # full clean: removes containers, volumes, images, and the host data directory
-make re      # fclean followed by all
+make re      # fclean followed by make
 ```
 
 ### Access
 - Website: https://sechlahb.42.fr
-
 
 See `USER_DOC.md` and `DEV_DOC.md` for detailed usage and setup instructions.
 
@@ -96,7 +81,7 @@ See `USER_DOC.md` and `DEV_DOC.md` for detailed usage and setup instructions.
 
 ## Project description: Docker design choices
 
-This project relies entirely on Docker to build and orchestrate the infrastructure. Each service (NGINX, WordPress/php-fpm, MariaDB, and the bonus services) has its own Dockerfile, built from the penultimate stable Debian/Alpine image, with no dependency on pre-built third-party images. The containers are wired together through a single custom Docker network (`inception`), and persistent data is handled through named volumes.
+This project relies entirely on Docker to build and orchestrate the infrastructure. Each mandatory service (NGINX, WordPress/php-fpm, MariaDB) has its own Dockerfile, built from the penultimate stable Debian/Alpine image, with no dependency on pre-built third-party images. The containers are wired together through a single custom Docker network (`inception`), and persistent data is handled through named volumes.
 
 ### Virtual Machines vs Docker
 
@@ -111,13 +96,13 @@ The project runs *inside* a VM, but each service within it is containerized rath
 
 ### Secrets vs Environment Variables
 
-Environment variables (via the `.env` file, loaded through `env_file` in `docker-compose.yml`) are used to configure the containers — domain name, database name/user, WordPress admin/user info, and FTP credentials. This keeps configuration out of the Dockerfiles and out of version control (the `.env` file is git-ignored).
+Environment variables (via the `.env` file, loaded through `env_file` in `docker-compose.yml`) are used to configure the containers — domain name, database name/user, and WordPress admin/user info. This keeps configuration out of the Dockerfiles and out of version control (the `.env` file is git-ignored).
 
-Docker secrets go a step further: rather than being exposed as process environment variables (visible via `docker inspect` or `/proc/<pid>/environ`), secrets are mounted as files inside the container's filesystem at runtime and only readable by the target process, which reduces the exposure surface for sensitive values like passwords. Environment variables are simpler to wire up and sufficient for non-critical configuration values, while secrets are the safer choice specifically for credentials and other sensitive data.
+Docker secrets go a step further: rather than being exposed as process environment variables (visible via `docker inspect` or `/proc/<pid>/environ`), secrets are mounted as files inside the container's filesystem at runtime and only readable by the target process, which reduces the exposure surface for sensitive values like passwords. Environment variables are simpler to wire up and sufficient for this project's scope, while secrets are the safer choice specifically for credentials in a production setting.
 
 ### Docker Network vs Host Network
 
-The project uses a dedicated user-defined bridge network (`inception`) rather than `network: host`. With a custom network, containers get their own private IP addresses and communicate with each other by service name (Docker's internal DNS), while only the ports explicitly published (443, 8080, 9443, 8085, 21, 10000–11000) are exposed to the host. Host networking, by contrast, would remove that isolation entirely — every container would share the host's network stack directly, which is both a security risk and explicitly forbidden by the project subject.
+The project uses a dedicated user-defined bridge network (`inception`) rather than `network: host`. With a custom network, containers get their own private IP addresses and communicate with each other by service name (Docker's internal DNS), while only port 443 is exposed to the host. Host networking, by contrast, would remove that isolation entirely — every container would share the host's network stack directly, which is both a security risk and explicitly forbidden by the project subject.
 
 ### Docker Volumes vs Bind Mounts
 

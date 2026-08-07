@@ -2,16 +2,15 @@
 
 # User Documentation
 
-This document explains, from an end user or administrator's point of view, how to use the Inception stack: what it provides, how to start/stop it, how to access it, and how to check that everything is working.
+This document explains, from an end user or administrator's point of view, how to use the Inception stack: what it provides, how to start/stop it, how to access it, and how to check that everything is working. This covers the mandatory part only (NGINX, WordPress, MariaDB) — no bonus services are included in this submission.
 
 ## 1. What services does the stack provide?
 
 | Service | Role | How you'd notice it |
 |---|---|---|
-| NGINX | The only entry point into the stack, serves everything over HTTPS | You visit `https://sechlahb.42.fr` |
+| NGINX | The only entry point into the stack, serves everything over HTTPS on port 443 | You visit `https://sechlahb.42.fr` |
 | WordPress | The website/CMS itself | The blog/site content and the admin dashboard |
 | MariaDB | Stores all WordPress data (posts, users, settings) | Invisible to you directly, but everything WordPress shows comes from here |
-
 
 ## 2. Starting and stopping the project
 
@@ -51,7 +50,7 @@ Before your first visit, make sure the domain resolves to your machine. Add this
 
 Then, once the stack is running:
 
-- **Website:** open `https://sechlahb.42.fr` in your browser. Your browser will likely warn you about the certificate — this is expected since it's a self-signed certificate for local development; you can safely proceed for this exercise.
+- **Website:** open `https://sechlahb.42.fr` in your browser. Your browser will likely warn you about the certificate — this is expected since it's a self-signed certificate for local development; you can safely proceed for this exercise. Note that the site is only reachable over HTTPS (port 443); it is not accessible over plain HTTP.
 - **WordPress admin panel:** go to `https://sechlahb.42.fr/wp-admin` and log in with your WordPress admin or WordPress user credentials (see next section for where to find them).
 
 ## 4. Locating and managing credentials
@@ -62,7 +61,6 @@ It defines, among others:
 - The MariaDB database name, user, and passwords (regular user + root)
 - The WordPress admin username, email, and password
 - A second, non-admin WordPress user (username, email, password)
-- The FTP username and password
 - The domain name used by the stack
 
 If you need to change a credential, edit `srcs/.env` and re-run `make re` so the containers pick up the new values (existing data in the volumes is preserved unless you also run `make clean`/`make fclean`).
@@ -75,7 +73,7 @@ If you need to change a credential, edit `srcs/.env` and re-run `make re` so the
 ```bash
 docker ps
 ```
-You should see one running container per service (`nginx`, `wordpress`, `mariadb`, `redis`, `adminer`, `ftp`, `website`, `portainer`), all with a status of `Up`.
+You should see one running container per service (`nginx`, `wordpress`, `mariadb`), all with a status of `Up`.
 
 **Check container logs** if something looks wrong:
 ```bash
@@ -84,9 +82,9 @@ docker logs <container_name>
 For example, `docker logs nginx` or `docker logs wordpress`.
 
 **Quick health checks:**
-- Visiting `https://sechlahb.42.fr` returns the WordPress site (not a connection error or a blank NGINX page).
+- Visiting `https://sechlahb.42.fr` returns the WordPress site (not a connection error or a blank NGINX page), and the WordPress installation page does not appear.
+- Visiting `http://sechlahb.42.fr` (port 80) does not connect — NGINX only listens on 443.
 - Logging into `/wp-admin` succeeds with the credentials from `.env`.
-- Adminer can connect to the `mariadb` service and shows the WordPress database and its tables.
 - `docker volume ls` shows the `mariadb_data` and `wordpress_data` named volumes, and `/home/sechlahb/data/mariadb` and `/home/sechlahb/data/wordpress` exist and contain data on the host.
 
 If a service repeatedly restarts, check its logs first — this is almost always caused by a misconfigured environment variable or a dependency (e.g., MariaDB) not being ready yet when the dependent service starts.
