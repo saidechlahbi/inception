@@ -1,6 +1,6 @@
 # inception
 This project aims to broaden your knowledge of system administration by using Docker. You will virtualize several Docker images, creating them in your new personal virtual machine.
-*This project has been created as part of the 42 curriculum by schahir.*
+*This project has been created as part of the 42 curriculum by sechlahb.*
 
 # Inception
 
@@ -22,7 +22,7 @@ The stack sets up a WordPress site served over HTTPS, backed by a MariaDB databa
 - **Adminer** — a lightweight web UI for inspecting/administering the MariaDB database.
 - **Portainer** — a web UI for managing and monitoring the Docker environment itself.
 
-All containers communicate over a dedicated Docker bridge network, and persistent data (the WordPress database and website files) is stored in Docker named volumes bind-mounted to `/home/schahir/data` on the host.
+All containers communicate over a dedicated Docker bridge network, and persistent data (the WordPress database and website files) is stored in Docker named volumes bind-mounted to `/home/sechlahb/data` on the host.
 
 ## Instructions
 
@@ -35,7 +35,7 @@ All containers communicate over a dedicated Docker bridge network, and persisten
 1. Clone the repository.
 2. Add the domain to your local DNS resolution so it points to the machine's own IP:
    ```
-   127.0.0.1   schahir.42.fr
+   127.0.0.1   sechlahb.42.fr
    ```
    (add this line to `/etc/hosts`)
 3. Review/adjust the variables in `srcs/.env` if needed (database credentials, WordPress admin, FTP credentials, domain name). Example `.env`:
@@ -47,7 +47,7 @@ All containers communicate over a dedicated Docker bridge network, and persisten
 
    WORDPRESS_DB_HOST=wordpress
 
-   DOMAIN_NAME=schahir.42.fr
+   DOMAIN_NAME=sechlahb.42.fr
    WP_ADMIN_USER=auser
    WP_ADMIN_EMAIL=amail@student.1337.fr
 
@@ -77,12 +77,8 @@ make re      # fclean followed by all
 ```
 
 ### Access
-- Website: https://schahir.42.fr
-- WordPress admin panel: https://schahir.42.fr/wp-admin
-- Adminer: http://schahir.42.fr:8080 (or the mapped port)
-- Portainer: https://schahir.42.fr:9443
-- Static website: http://schahir.42.fr:8085
-- FTP: port 21 (+ passive port range 10000–11000), connecting to the WordPress volume
+- Website: https://sechlahb.42.fr
+
 
 See `USER_DOC.md` and `DEV_DOC.md` for detailed usage and setup instructions.
 
@@ -125,6 +121,6 @@ The project uses a dedicated user-defined bridge network (`inception`) rather th
 
 ### Docker Volumes vs Bind Mounts
 
-Two named volumes (`mariadb_data` and `wordpress_data`) are used to persist the database and the WordPress files. Named volumes are managed by Docker itself, are more portable across environments, and are decoupled from a specific host path in the Compose file syntax — even though, per the subject's requirement, their backing storage is explicitly pinned to `/home/schahir/data` on the host via `driver_opts`.
+Two named volumes (`mariadb_data` and `wordpress_data`) are used to persist the database and the WordPress files. Named volumes are managed by Docker itself, are more portable across environments, and are decoupled from a specific host path in the Compose file syntax — even though, per the subject's requirement, their backing storage is explicitly pinned to `/home/sechlahb/data` on the host via `driver_opts`.
 
 Bind mounts, which map a container path directly to an arbitrary host path, are simpler but tie the setup more tightly to the host filesystem's exact layout/permissions and are not managed by Docker's volume lifecycle (`docker volume ls/rm/prune`, etc.). The subject explicitly requires named volumes for the two persistent stores, which is what this project uses.

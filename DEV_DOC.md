@@ -1,4 +1,4 @@
-*This project has been created as part of the 42 curriculum by schahir.*
+*This project has been created as part of the 42 curriculum by sechlahb.*
 
 # Developer Documentation
 
@@ -32,12 +32,6 @@ This document describes how to set up, build, and work on the Inception project 
         ├── wordpress/
         │   ├── Dockerfile
         │   └── conf/ ...
-        └── bonus/
-            ├── redis/
-            ├── ftp/
-            ├── adminer/
-            ├── website/
-            └── portainer/
 ```
 
 Each service directory under `requirements/` contains its own `Dockerfile` and any configuration files / entrypoint scripts it needs, following the "one Dockerfile per service, no pre-built images" rule of the subject.
@@ -48,16 +42,16 @@ All configuration lives in `srcs/.env`, loaded by every service via `env_file: -
 
 - `MARIA_DB_NAME`, `USER`, `USER_PASSWORD`, `ROOT_PASSWORD` — MariaDB configuration.
 - `WORDPRESS_DB_HOST` — hostname MariaDB is reachable at from WordPress (the `wordpress` service, resolved via Docker's internal DNS on the `inception` network).
-- `DOMAIN_NAME` — the domain the site is served under (`schahir.42.fr`).
+- `DOMAIN_NAME` — the domain the site is served under (`sechlahb.42.fr`).
 - `WP_ADMIN_USER`, `WP_ADMIN_EMAIL`, `WP_ADMIN_PASSWORD` — WordPress administrator account.
 - `WP_USER`, `WP_USER_EMAIL`, `WP_USER_PASSWORD` — a secondary, non-admin WordPress user.
-- `FTP_USER`, `FTP_PASSWORD` — credentials for the bonus FTP service.
+
 
 `.env` must never be committed — it is git-ignored. No credential is hardcoded in any Dockerfile; every Dockerfile/entrypoint reads its secrets from the environment at container start.
 
 Before your first run, add the domain to your local DNS resolution:
 ```bash
-echo "127.0.0.1   schahir.42.fr" | sudo tee -a /etc/hosts
+echo "127.0.0.1   sechlahb.42.fr" | sudo tee -a /etc/hosts
 ```
 
 ## 2. Building and launching the project
@@ -76,8 +70,8 @@ make
 ```
 This runs, in effect:
 ```bash
-mkdir -p /home/schahir/data/mariadb
-mkdir -p /home/schahir/data/wordpress
+mkdir -p /home/sechlahb/data/mariadb
+mkdir -p /home/sechlahb/data/wordpress
 docker compose -f srcs/docker-compose.yml --env-file srcs/.env up -d --build
 ```
 
@@ -138,21 +132,21 @@ volumes:
     driver_opts:
       type: none
       o: bind
-      device: /home/schahir/data/mariadb
+      device: /home/sechlahb/data/mariadb
   wordpress_data:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: /home/schahir/data/wordpress
+      device: /home/sechlahb/data/wordpress
 ```
 
 - `mariadb_data` is mounted into the `mariadb` container at `/var/lib/mysql` — this is where all database files (WordPress tables, users, posts, etc.) live.
 - `wordpress_data` is mounted at `/var/www/html` in both the `wordpress`, `nginx`, and `ftp` containers — this is the WordPress installation and uploaded media, shared between the app server (for writing/serving PHP) and NGINX (for serving static assets) and FTP (for direct file access).
 
-Even though these are declared as Docker **named volumes** (not raw bind mounts) in the Compose syntax — which the subject requires — their storage backend is pinned to specific paths on the host (`/home/schahir/data/mariadb` and `/home/schahir/data/wordpress`) via `driver_opts`. This means:
+Even though these are declared as Docker **named volumes** (not raw bind mounts) in the Compose syntax — which the subject requires — their storage backend is pinned to specific paths on the host (`/home/sechlahb/data/mariadb` and `/home/sechlahb/data/wordpress`) via `driver_opts`. This means:
 - Data survives `docker compose down` and container recreation.
 - Data is only removed by `docker compose down -v` (or `make clean` / `make fclean`, which use `-v`), or by manually deleting the host directory.
-- You can inspect the raw files directly on the host in `/home/schahir/data/` while the stack is stopped (or even while running, though writes should go through the containers to avoid permission/lock issues).
+- You can inspect the raw files directly on the host in `/home/sechlahb/data/` while the stack is stopped (or even while running, though writes should go through the containers to avoid permission/lock issues).
 
 To reset the project to a completely fresh state (empty database, fresh WordPress install), run `make clean` (or `make fclean` for a full image/data wipe) followed by `make`.
