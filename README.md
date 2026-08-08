@@ -6,7 +6,7 @@
 
 Inception is a system administration project whose goal is to deploy a small, containerized web infrastructure using Docker and Docker Compose, built entirely from scratch.
 
-The stack sets up a WordPress site served over HTTPS, backed by a MariaDB database, with each service isolated in its own container built from a custom Dockerfile (no pre-built images pulled from Docker Hub, aside from the base Alpine/Debian image).
+The stack sets up a WordPress site served over HTTPS, backed by a MariaDB database, with each service isolated in its own container built from a custom Dockerfile (no pre-built images pulled from Docker Hub, aside from the base Debian image).
 
 **Mandatory services:**
 - **NGINX** — the single entry point of the infrastructure, serving WordPress over HTTPS (TLSv1.2/TLSv1.3) on port 443 only.
@@ -14,8 +14,6 @@ The stack sets up a WordPress site served over HTTPS, backed by a MariaDB databa
 - **MariaDB** — the database engine backing WordPress, with no web server installed.
 
 All containers communicate over a dedicated Docker bridge network, and persistent data (the WordPress database and website files) is stored in Docker named volumes bind-mounted to `/home/sechlahb/data` on the host.
-
-> This submission covers the **mandatory part only**; no bonus services are included.
 
 ## Instructions
 
@@ -41,7 +39,7 @@ All containers communicate over a dedicated Docker bridge network, and persisten
    DOMAIN_NAME=sechlahb.42.fr
    WP_ADMIN_USER=said
    WP_ADMIN_PASSWORD=12345
-   WP_ADMIN_EMAIL=sechlahbi@gmail.com
+   WP_ADMIN_EMAIL=sechlahb@gmail.com
 
    WP_USER=sechlahb
    WP_USER_EMAIL=said@gmail.com
@@ -75,13 +73,15 @@ See `USER_DOC.md` and `DEV_DOC.md` for detailed usage and setup instructions.
 - [WordPress CLI (WP-CLI) documentation](https://wp-cli.org/)
 - [MariaDB documentation](https://mariadb.com/kb/en/documentation/)
 - [PHP-FPM documentation](https://www.php.net/manual/en/install.fpm.php)
+- [A BOOK ] (https://dockerbook.com/thedockerbook_sample.pdf)
+- [ GRADME TUTORIAL ] (https://tuto.grademe.fr/inception/#)
 - 42 Inception subject PDF (provided by the school)
 
 **AI usage:** An AI assistant was used as a support tool during this project, mainly to help debug Docker entrypoint scripts and NGINX configuration issues, to clarify how WP-CLI automation commands work, and to build a deeper conceptual understanding of how the stack fits together end-to-end (DNS resolution, TLS handshake, FastCGI communication between NGINX and PHP-FPM, and MariaDB internals). All AI-assisted explanations were cross-checked against official documentation and tested manually before being relied upon; no code was used without being fully understood.
 
 ## Project description: Docker design choices
 
-This project relies entirely on Docker to build and orchestrate the infrastructure. Each mandatory service (NGINX, WordPress/php-fpm, MariaDB) has its own Dockerfile, built from the penultimate stable Debian/Alpine image, with no dependency on pre-built third-party images. The containers are wired together through a single custom Docker network (`inception`), and persistent data is handled through named volumes.
+This project relies entirely on Docker to build and orchestrate the infrastructure. Each mandatory service (NGINX, WordPress/php-fpm, MariaDB) has its own Dockerfile, built from the penultimate stable Debian image, with no dependency on pre-built third-party images. The containers are wired together through a single custom Docker network (`inception`), and persistent data is handled through named volumes.
 
 ### Virtual Machines vs Docker
 
